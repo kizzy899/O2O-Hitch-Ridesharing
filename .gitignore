@@ -25,5 +25,13 @@ hs_err_pid*
 
 .DS_Store
 
-**/target
+**/target/
+.vscode/
+node_modules/
+dist/
+build/
+coverage/
+*.iml
+*.pid
+openrestrylog/
 *.swp

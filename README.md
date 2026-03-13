@@ -1,54 +1,65 @@
-# O2O同城顺风车
+# O2O 同城顺风车
 
-## 测试环境接口：
+一个包含后端微服务、H5 页面和微信小程序的同城顺风车示例项目。
 
-###  服务网关： 
+## 目录结构
 
- http://116.62.213.90:10010
+- `backend/`：Java 微服务后端，包含网关、用户、行程、订单、支付、通知、存储等模块
+- `web/`：H5 页面资源
+- `wechatapp/`：微信小程序代码
+- `docker-compose.yml`：本地依赖服务编排
+- `nginx.conf`：Nginx 配置
+- `hitch.sql`：数据库初始化脚本
 
-###  注册中心： 
+## 后端模块
 
- http://116.62.213.90:10011/nacos
+`backend/pom.xml` 为聚合工程，主要模块包括：
 
-###  harbor
- https://manager-hongbaoyu-java.itheima.net:8443/harbor/projects
- 
+- `hitch-gateway`
+- `hitch-account`
+- `hitch-stroke`
+- `hitch-order`
+- `hitch-payment`
+- `hitch-notice`
+- `hitch-storage`
+- `hitch-commons`
+- `hitch-modules`
 
+## 快速开始
 
-###  行程中心-12： 
+### 1. 准备环境
 
- http://116.62.213.90:10012/stroke/doc.html#/home
+- JDK 8+
+- Maven 3.6+
+- MySQL
+- Redis
+- Nacos
+- RabbitMQ
+- MinIO（如使用文件存储功能）
 
-###  存储中心-1： 
+### 2. 初始化数据库
 
- http://116.62.213.90:10013/storage/doc.html#/home
+执行根目录下的 `hitch.sql`。
 
-###  支付中心-9： 
+### 3. 启动依赖服务
 
- http://116.62.213.90:10014/payment/doc.html#/home
+如本项目环境适配完成，可根据需要使用：
 
-###  订单中心-4： 
+```bash
+docker-compose up -d
+```
 
- http://116.62.213.90:10015/order/doc.html#/home
+### 4. 启动后端服务
 
-###  消息中心-1： 
+进入 `backend/` 后执行：
 
- http://116.62.213.90:10016/notice/doc.html#/home
+```bash
+mvn clean install
+```
 
-###  用户中心-12： 
+然后按需启动各个微服务模块。
 
- http://116.62.213.90:10017/account/doc.html#/home
+## 说明
 
-## total:
-
-### 接口:
-
-39
-
-### 代码:
-
-顺风车
-added lines: 33070, removed lines: 10804, total lines: 22266
-
-total with opencv demo
-added lines: 478179, removed lines: 10814, total lines: 467365
+- 仓库当前主分支为 `main`
+- 本仓库已重新初始化为全新 Git 历史，并已关联 GitHub 仓库 `kizzy899/O2O`
