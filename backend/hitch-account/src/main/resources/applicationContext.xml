@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="myBeanPostProcessor" class="com.heima.account.testSpring.MyBeanPostProcessor"></bean>
+
+    <bean id="course" class="com.heima.account.testSpring.Course">
+        <property name="cid" value="1"></property>
+        <property name="cname" value="java"></property>
+    </bean>
+
+    <bean id="student" class="com.heima.account.testSpring.Student" init-method="b">
+        <property name="id" value="1"></property>
+        <property name="name" value="张三"></property>
+        <property name="course" ref="course"></property>
+    </bean>
+
+
+</beans>
