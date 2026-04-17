@@ -71,6 +71,9 @@ export function FlowConsolePanel() {
     try {
       const result = await executeStep(activeStep.id);
       setStepState(activeStep.id, result.passed ? "passed" : "failed", result.summary, result.data, result.passed ? "" : result.summary);
+      if (result.passed && activeStep.id < STEP_DEFINITIONS.length) {
+        setActiveStep(activeStep.id + 1);
+      }
     } catch (error) {
       const message = error instanceof Error ? error.message : "未知错误";
       setStepState(activeStep.id, "failed", message, null, message);
@@ -279,4 +282,3 @@ export function FlowConsolePanel() {
     </section>
   );
 }
-

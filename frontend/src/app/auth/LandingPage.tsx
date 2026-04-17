@@ -18,7 +18,7 @@ export function LandingPage() {
   const [error, setError] = useState("");
   const [registerError, setRegisterError] = useState("");
 
-  const { loginSuccess } = useAppSession();
+  const { loginSuccess, setActiveStep, setStepState } = useAppSession();
   const { makeApi } = useApiFactory("webapp");
   const api = useMemo(() => makeApi(() => ""), [makeApi]);
   const navigate = useNavigate();
@@ -39,6 +39,13 @@ export function LandingPage() {
       const session = normalizeAuth(await api.login(username.trim(), password));
       const role = session.role.toUpperCase() === "DRIVER" ? "driver" : "passenger";
       loginSuccess(role, session.token, { userId: session.userId, role: session.role });
+      if (role === "driver") {
+        setStepState(7, "passed", "司机登录成功", session);
+        setActiveStep(8);
+      } else {
+        setStepState(2, "passed", "乘客登录成功", session);
+        setActiveStep(3);
+      }
       navigate(role === "driver" ? "/driver/home" : "/passenger/home");
     } catch (err) {
       if (err instanceof ApiError) {
@@ -67,6 +74,13 @@ export function LandingPage() {
       );
       const role = session.role.toUpperCase() === "DRIVER" ? "driver" : "passenger";
       loginSuccess(role, session.token, { userId: session.userId, role: session.role });
+      if (role === "driver") {
+        setStepState(6, "passed", "司机注册成功", session);
+        setActiveStep(7);
+      } else {
+        setStepState(1, "passed", "乘客注册成功", session);
+        setActiveStep(2);
+      }
       navigate(role === "driver" ? "/driver/home" : "/passenger/home");
     } catch (err) {
       if (err instanceof ApiError) {

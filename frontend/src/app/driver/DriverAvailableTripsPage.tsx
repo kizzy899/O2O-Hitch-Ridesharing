@@ -1,4 +1,5 @@
-﻿import { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { ApiError } from "../../api";
 import type { OrderRecord } from "../../types";
 import { useAppSession } from "../../state/app-session";
@@ -6,9 +7,10 @@ import { useApiFactory } from "../../state/api-factory";
 import { PageBackButton } from "../components/PageBackButton";
 
 export function DriverAvailableTripsPage() {
-  const { state, setOrderId, setLastResponse } = useAppSession();
+  const { state, setActiveStep, setOrderId, setLastResponse, setStepState } = useAppSession();
   const { makeApi } = useApiFactory("webapp");
   const api = useMemo(() => makeApi(() => state.tokens.driverToken), [makeApi, state.tokens.driverToken]);
+  const navigate = useNavigate();
 
   const [items, setItems] = useState<OrderRecord[]>([]);
   const [loading, setLoading] = useState(false);
@@ -32,7 +34,10 @@ export function DriverAvailableTripsPage() {
       const response = await api.acceptOrder(orderId);
       setOrderId(orderId);
       setLastResponse(response);
+      setStepState(8, "passed", "司机接单成功", response);
+      setActiveStep(9);
       await loadPendingOrders();
+      navigate("/driver/orders");
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "接单失败");
     }

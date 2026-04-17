@@ -1,13 +1,15 @@
-﻿import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { ApiError } from "../../api";
 import { useAppSession } from "../../state/app-session";
 import { useApiFactory } from "../../state/api-factory";
 import { PageBackButton } from "../components/PageBackButton";
 
 export function PassengerPublishTripPage() {
-  const { state, setTripId } = useAppSession();
+  const { state, setActiveStep, setStepState, setTripId } = useAppSession();
   const { makeApi } = useApiFactory("webapp");
   const api = useMemo(() => makeApi(() => state.tokens.passengerToken), [makeApi, state.tokens.passengerToken]);
+  const navigate = useNavigate();
 
   const [from, setFrom] = useState("Campus A");
   const [to, setTo] = useState("Campus B");
@@ -30,7 +32,10 @@ export function PassengerPublishTripPage() {
       });
       const tripId = trip.tripId || trip.id || "";
       setTripId(tripId);
+      setStepState(3, "passed", "行程发布成功", trip);
+      setActiveStep(4);
       setMessage(`发布成功，tripId: ${tripId}${departAt ? `，出发时间: ${departAt}` : ""}`);
+      navigate("/passenger/trips");
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "发布失败");
     } finally {

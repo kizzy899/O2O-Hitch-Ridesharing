@@ -1,10 +1,13 @@
-﻿import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { FlowConsolePanel } from "../console/FlowConsolePanel";
+import { getRouteForStep, getStepForRoute } from "../flow/route-sync";
 import { useAppSession } from "../state/app-session";
 
 export function SplitWorkbenchLayout() {
-  const { state, logoutActiveRole, setActiveRole } = useAppSession();
+  const { state, logoutActiveRole, setActiveRole, setActiveStep } = useAppSession();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const currentUser =
     state.activeRole === "passenger"
@@ -18,6 +21,20 @@ export function SplitWorkbenchLayout() {
     setActiveRole("guest");
     navigate("/auth");
   }
+
+  useEffect(() => {
+    const nextStepId = getStepForRoute(location.pathname, state.flow.activeStepId);
+    if (nextStepId !== state.flow.activeStepId) {
+      setActiveStep(nextStepId);
+    }
+  }, [location.pathname, setActiveStep, state.flow.activeStepId]);
+
+  useEffect(() => {
+    const targetPath = getRouteForStep(state.flow.activeStepId);
+    if (targetPath !== location.pathname) {
+      navigate(targetPath);
+    }
+  }, [location.pathname, navigate, state.flow.activeStepId]);
 
   return (
     <div className="workbench-root">
@@ -51,4 +68,3 @@ export function SplitWorkbenchLayout() {
     </div>
   );
 }
-

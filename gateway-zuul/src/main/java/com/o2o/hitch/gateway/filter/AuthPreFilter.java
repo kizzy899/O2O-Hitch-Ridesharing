@@ -21,6 +21,7 @@ public class AuthPreFilter extends ZuulFilter {
 
     private static final List<String> OPEN_PATHS = Arrays.asList(
             "/api/auth/login",
+            "/api/auth/register",
             "/actuator/health"
     );
 
