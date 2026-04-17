@@ -50,6 +50,11 @@ public class TripController {
         return ApiResponse.success(trip);
     }
 
+    @GetMapping("/internal/{id}")
+    public ApiResponse<Map<String, Object>> getTripInternal(@PathVariable String id) {
+        return ApiResponse.success(tripService.getById(id));
+    }
+
     @GetMapping
     public ApiResponse<List<Map<String, Object>>> listTrips(@RequestParam("passengerId") String passengerId,
                                                             @RequestParam(value = "status", required = false) String status,

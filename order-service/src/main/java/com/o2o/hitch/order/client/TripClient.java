@@ -11,7 +11,7 @@ import java.util.Map;
 @FeignClient(name = "trip-service", fallback = TripClientFallback.class)
 public interface TripClient {
 
-    @GetMapping("/trips/{tripId}")
+    @GetMapping("/trips/internal/{tripId}")
     ApiResponse<Map<String, Object>> getTrip(@PathVariable("tripId") String tripId);
 
     @PostMapping("/trips/internal/{tripId}/order-accepted")
