@@ -37,6 +37,9 @@ public class AuthPreFilter extends ZuulFilter {
     @Override
     public boolean shouldFilter() {
         HttpServletRequest request = RequestContext.getCurrentContext().getRequest();
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+            return false;
+        }
         String path = request.getRequestURI();
         return OPEN_PATHS.stream().noneMatch(path::startsWith);
     }
