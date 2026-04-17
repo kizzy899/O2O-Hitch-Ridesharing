@@ -1,13 +1,15 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { FlowConsolePanel } from "../console/FlowConsolePanel";
-import { getRouteForStep, getStepForRoute } from "../flow/route-sync";
+import { getRouteSyncAction } from "../flow/route-sync";
 import { useAppSession } from "../state/app-session";
 
 export function SplitWorkbenchLayout() {
   const { state, logoutActiveRole, setActiveRole, setActiveStep } = useAppSession();
   const navigate = useNavigate();
   const location = useLocation();
+  const prevPathnameRef = useRef(location.pathname);
+  const prevStepIdRef = useRef(state.flow.activeStepId);
 
   const currentUser =
     state.activeRole === "passenger"
@@ -23,18 +25,23 @@ export function SplitWorkbenchLayout() {
   }
 
   useEffect(() => {
-    const nextStepId = getStepForRoute(location.pathname, state.flow.activeStepId);
-    if (nextStepId !== state.flow.activeStepId) {
-      setActiveStep(nextStepId);
-    }
-  }, [location.pathname, setActiveStep, state.flow.activeStepId]);
+    const action = getRouteSyncAction({
+      pathname: location.pathname,
+      activeStepId: state.flow.activeStepId,
+      prevPathname: prevPathnameRef.current,
+      prevStepId: prevStepIdRef.current
+    });
 
-  useEffect(() => {
-    const targetPath = getRouteForStep(state.flow.activeStepId);
-    if (targetPath !== location.pathname) {
-      navigate(targetPath);
+    if (action?.type === "set-step") {
+      setActiveStep(action.stepId);
     }
-  }, [location.pathname, navigate, state.flow.activeStepId]);
+    if (action?.type === "navigate") {
+      navigate(action.path);
+    }
+
+    prevPathnameRef.current = location.pathname;
+    prevStepIdRef.current = state.flow.activeStepId;
+  }, [location.pathname, navigate, setActiveStep, state.flow.activeStepId]);
 
   return (
     <div className="workbench-root">

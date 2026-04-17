@@ -17,9 +17,15 @@ const STEP_ROUTE_MAP: Record<number, string> = {
 };
 
 const AUTH_STEPS = new Set([1, 2, 6, 7]);
+const PASSENGER_HOME_STEPS = new Set([2, 5]);
 const PASSENGER_ORDER_STEPS = new Set([10, 11, 12]);
 const PASSENGER_TRIPS_STEPS = new Set([4, 14]);
 const DRIVER_AVAILABLE_STEPS = new Set([8, 13, 15]);
+
+export type RouteSyncAction =
+  | { type: "set-step"; stepId: number }
+  | { type: "navigate"; path: string }
+  | null;
 
 export function getRouteForStep(stepId: number): string {
   return STEP_ROUTE_MAP[stepId] ?? "/auth";
@@ -33,10 +39,42 @@ export function getStepForRoute(pathname: string, currentStepId: number): number
   if (/^\/passenger\/trips\/new$/.test(pathname)) return 3;
   if (/^\/passenger\/trips$/.test(pathname)) return PASSENGER_TRIPS_STEPS.has(currentStepId) ? currentStepId : 4;
   if (/^\/passenger\/orders$/.test(pathname)) return PASSENGER_ORDER_STEPS.has(currentStepId) ? currentStepId : 11;
-  if (/^\/passenger\/home$/.test(pathname)) return 2;
+  if (/^\/passenger\/home$/.test(pathname)) return PASSENGER_HOME_STEPS.has(currentStepId) ? currentStepId : 2;
   if (/^\/driver\/available$/.test(pathname)) return DRIVER_AVAILABLE_STEPS.has(currentStepId) ? currentStepId : 8;
   if (/^\/driver\/orders$/.test(pathname)) return 9;
   if (/^\/driver\/home$/.test(pathname)) return 7;
 
   return currentStepId;
+}
+
+export function getRouteSyncAction({
+  pathname,
+  activeStepId,
+  prevPathname,
+  prevStepId
+}: {
+  pathname: string;
+  activeStepId: number;
+  prevPathname: string;
+  prevStepId: number;
+}): RouteSyncAction {
+  const pathChanged = pathname !== prevPathname;
+  const stepChanged = activeStepId !== prevStepId;
+
+  if (pathChanged) {
+    const mappedStepId = getStepForRoute(pathname, activeStepId);
+    if (mappedStepId !== activeStepId) {
+      return { type: "set-step", stepId: mappedStepId };
+    }
+    return null;
+  }
+
+  if (stepChanged) {
+    const targetPath = getRouteForStep(activeStepId);
+    if (targetPath !== pathname) {
+      return { type: "navigate", path: targetPath };
+    }
+  }
+
+  return null;
 }

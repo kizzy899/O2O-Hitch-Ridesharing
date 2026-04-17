@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getRouteForStep, getStepForRoute } from "../flow/route-sync";
+import { getRouteForStep, getRouteSyncAction, getStepForRoute } from "../flow/route-sync";
 
 describe("route and step sync", () => {
   it("maps major steps to right-side pages", () => {
@@ -27,5 +27,32 @@ describe("route and step sync", () => {
     expect(getStepForRoute("/passenger/orders", 12)).toBe(12);
     expect(getStepForRoute("/driver/available", 13)).toBe(13);
     expect(getStepForRoute("/passenger/trips", 14)).toBe(14);
+  });
+
+  it("keeps each step stable on its own mapped route", () => {
+    for (let stepId = 1; stepId <= 15; stepId += 1) {
+      const route = getRouteForStep(stepId);
+      expect(getStepForRoute(route, stepId)).toBe(stepId);
+    }
+  });
+
+  it("prioritizes route change reconciliation to avoid ping-pong navigation", () => {
+    const action = getRouteSyncAction({
+      pathname: "/passenger/trips/new",
+      activeStepId: 3,
+      prevPathname: "/passenger/home",
+      prevStepId: 3
+    });
+    expect(action).toBeNull();
+  });
+
+  it("navigates only when step changes without a route change", () => {
+    const action = getRouteSyncAction({
+      pathname: "/passenger/home",
+      activeStepId: 3,
+      prevPathname: "/passenger/home",
+      prevStepId: 2
+    });
+    expect(action).toEqual({ type: "navigate", path: "/passenger/trips/new" });
   });
 });
