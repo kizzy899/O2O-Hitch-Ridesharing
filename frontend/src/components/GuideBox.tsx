@@ -62,7 +62,7 @@ export function GuideBox({
         </article>
       </div>
 
-      {step.id === 7 ? (
+      {step.id === 9 ? (
         <div className="inline-controls">
           <label>
             <input
@@ -71,7 +71,7 @@ export function GuideBox({
               checked={completionAction === "complete"}
               onChange={() => onCompletionActionChange("complete")}
             />
-            7A 司机完成
+            9A 司机完成
           </label>
           <label>
             <input
@@ -80,12 +80,12 @@ export function GuideBox({
               checked={completionAction === "cancel"}
               onChange={() => onCompletionActionChange("cancel")}
             />
-            7B 乘客取消
+            9B 乘客取消
           </label>
         </div>
       ) : null}
 
-      {step.id === 12 ? (
+      {step.id === 14 ? (
         <div className="inline-controls">
           <label htmlFor="foreignTripId">他人 tripId（用于越权测试）</label>
           <input

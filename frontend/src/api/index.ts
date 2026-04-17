@@ -2,6 +2,20 @@ import type { ApiEnvelope, AuthSession, OrderRecord, TripRecord } from "../types
 
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:9000/api";
 
+export interface ApiClientTraceEvent {
+  method: string;
+  path: string;
+  requestBody?: unknown;
+  responseBody?: unknown;
+  errorMessage?: string;
+}
+
+export interface ApiClientHooks {
+  onRequest?: (event: ApiClientTraceEvent) => void;
+  onResponse?: (event: ApiClientTraceEvent) => void;
+  onError?: (event: ApiClientTraceEvent) => void;
+}
+
 export class ApiError extends Error {
   status: number;
   traceId?: string;
@@ -19,10 +33,12 @@ export class ApiError extends Error {
 export class ApiClient {
   private readonly baseUrl: string;
   private readonly tokenProvider: () => string;
+  private readonly hooks?: ApiClientHooks;
 
-  constructor(baseUrl: string, tokenProvider: () => string = () => "") {
+  constructor(baseUrl: string, tokenProvider: () => string = () => "", hooks?: ApiClientHooks) {
     this.baseUrl = baseUrl.replace(/\/$/, "");
     this.tokenProvider = tokenProvider;
+    this.hooks = hooks;
   }
 
   async get<T>(path: string): Promise<T> {
@@ -45,6 +61,8 @@ export class ApiClient {
       headers.Authorization = `Bearer ${token}`;
     }
 
+    this.hooks?.onRequest?.({ method, path, requestBody: body });
+
     const response = await fetch(`${this.baseUrl}${path}`, {
       method,
       headers,
@@ -53,22 +71,38 @@ export class ApiClient {
 
     const envelope = (await response.json()) as ApiEnvelope<T>;
 
-    if (!response.ok || envelope.code !== 200) {
+    if (!response.ok || envelope.code !== 0) {
+      this.hooks?.onError?.({
+        method,
+        path,
+        requestBody: body,
+        responseBody: envelope,
+        errorMessage: envelope.message || "请求失败"
+      });
       throw new ApiError(envelope.message || "请求失败", response.status, envelope.traceId, envelope);
     }
+
+    this.hooks?.onResponse?.({
+      method,
+      path,
+      requestBody: body,
+      responseBody: envelope.data
+    });
 
     return envelope.data;
   }
 }
 
-export function createApi(tokenProvider: () => string): ReturnType<typeof buildApi> {
-  const client = new ApiClient(API_BASE_URL, tokenProvider);
+export function createApi(tokenProvider: () => string, hooks?: ApiClientHooks): ReturnType<typeof buildApi> {
+  const client = new ApiClient(API_BASE_URL, tokenProvider, hooks);
   return buildApi(client);
 }
 
 function buildApi(client: ApiClient) {
   return {
     login: (username: string, password: string) => client.post<AuthSession | AuthSession[]>("/auth/login", { username, password }),
+    register: (username: string, password: string, role: string, nickname: string, mobile: string) =>
+      client.post<AuthSession | AuthSession[]>("/auth/register", { username, password, role, nickname, mobile }),
     createTrip: (payload: { passengerId: string; from: string; to: string }) => client.post<TripRecord>("/trips", payload),
     listTrips: (passengerId: string) => client.get<TripRecord[]>(`/trips?passengerId=${encodeURIComponent(passengerId)}`),
     createOrder: (payload: { tripId: string; driverId: string; passengerId: string }) => client.post<OrderRecord>("/orders/create", payload),
@@ -89,3 +123,4 @@ function buildApi(client: ApiClient) {
 }
 
 export type FlowApi = ReturnType<typeof buildApi>;
+

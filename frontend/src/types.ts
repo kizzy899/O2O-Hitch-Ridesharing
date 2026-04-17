@@ -1,6 +1,8 @@
 export type StepState = "idle" | "running" | "passed" | "failed";
 
 export type RoleView = "passenger" | "driver" | "admin" | "mixed";
+export type AppRole = "passenger" | "driver" | "guest";
+export type ApiTraceSource = "console" | "webapp";
 
 export interface StepDefinition {
   id: number;
@@ -23,10 +25,13 @@ export interface FlowTokens {
   foreignTripId: string;
 }
 
-export interface FlowContext extends FlowTokens {
+export interface FlowContext {
   roleView: RoleView;
   activeStepId: number;
   completionAction: "complete" | "cancel";
+  tripId: string;
+  orderId: string;
+  foreignTripId: string;
   stepStates: Record<number, StepState>;
   stepMessages: Record<number, string>;
   lastResponse: unknown;
@@ -43,6 +48,11 @@ export interface ApiEnvelope<T> {
 
 export interface AuthSession {
   token: string;
+  userId: string;
+  role: string;
+}
+
+export interface AppUser {
   userId: string;
   role: string;
 }
@@ -70,4 +80,28 @@ export interface FlowStepResult {
   passed: boolean;
   summary: string;
   data?: unknown;
+}
+
+export interface ApiTrace {
+  source: ApiTraceSource;
+  method: string;
+  path: string;
+  requestBody?: unknown;
+  responseBody?: unknown;
+  errorMessage?: string;
+  timestamp: number;
+}
+
+export interface AppSessionState {
+  tokens: {
+    passengerToken: string;
+    driverToken: string;
+  };
+  users: {
+    passenger?: AppUser;
+    driver?: AppUser;
+  };
+  activeRole: AppRole;
+  flow: FlowContext;
+  apiTrace: ApiTrace | null;
 }

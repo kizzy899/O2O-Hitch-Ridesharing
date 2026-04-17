@@ -18,4 +18,15 @@ public class AuthUserClientFallback implements AuthUserClient {
         profile.put("fallback", true);
         return ApiResponse.success(profile);
     }
+
+    @Override
+    public ApiResponse<Map<String, Object>> registerInternal(Map<String, Object> body) {
+        Map<String, Object> profile = new HashMap<>();
+        profile.put("userId", body.get("userId"));
+        profile.put("role", body.get("role"));
+        profile.put("nickname", body.get("nickname"));
+        profile.put("mobile", body.get("mobile"));
+        profile.put("fallback", true);
+        return ApiResponse.success(profile);
+    }
 }

@@ -299,6 +299,33 @@ wait_eureka_registrations() {
   exit 1
 }
 
+wait_gateway_auth_route_ready() {
+  local retry="${1:-45}"
+  local sleep_seconds="${2:-2}"
+  local probe='{"username":"__startup_probe__","password":"__startup_probe__"}'
+
+  local i
+  for ((i = 1; i <= retry; i++)); do
+    local status
+    status="$(curl -sS -o /dev/null -w "%{http_code}" -X POST "http://localhost:9000/api/auth/login" -H "Content-Type: application/json" -d "${probe}" 2>/dev/null || true)"
+
+    if [ -n "${status}" ] && [ "${status}" -ge 200 ] && [ "${status}" -lt 500 ]; then
+      ok "Gateway route to auth-service is ready (status=${status})"
+      return 0
+    fi
+
+    if [ -z "${status}" ] || [ "${status}" = "000" ]; then
+      info "Gateway route to auth-service waiting (${i}/${retry})"
+    else
+      info "Gateway route to auth-service waiting (${i}/${retry}): status=${status}"
+    fi
+    sleep "${sleep_seconds}"
+  done
+
+  fail "Gateway route to auth-service readiness timeout"
+  exit 1
+}
+
 print_urls() {
   section "Startup Summary / Access URLs"
   echo "  - Frontend: http://localhost:5173"
@@ -380,6 +407,7 @@ main() {
   start_module "auth-service" "9010"
   wait_health "http://localhost:9000/actuator/health" "gateway-zuul" 90 2
   wait_health "http://localhost:9010/actuator/health" "auth-service" 90 2
+  wait_gateway_auth_route_ready 45 2
 
   step "3/4 Start business services"
   start_module "user-service" "9011"

@@ -218,6 +218,41 @@ function Wait-EurekaRegistrations($expected = 2, $retry = 40, $sleepSeconds = 2)
     exit 1
 }
 
+function Wait-GatewayAuthRouteReady($retry = 45, $sleepSeconds = 2) {
+    $probeBody = '{"username":"__startup_probe__","password":"__startup_probe__"}'
+
+    for ($i = 1; $i -le $retry; $i++) {
+        try {
+            $resp = Invoke-WebRequest -Uri "http://localhost:9000/api/auth/login" -Method POST -ContentType "application/json" -Body $probeBody -UseBasicParsing -TimeoutSec 3
+            if ($resp.StatusCode -ge 200 -and $resp.StatusCode -lt 500) {
+                Write-Log "OK" "Gateway route to auth-service is ready (status=$($resp.StatusCode))"
+                return
+            }
+            Write-Log "WAIT" "Gateway route to auth-service returned status=$($resp.StatusCode), retry $i/$retry"
+        } catch {
+            $statusCode = $null
+            if ($_.Exception.Response -and $_.Exception.Response.StatusCode) {
+                $statusCode = [int]$_.Exception.Response.StatusCode
+                if ($statusCode -ge 200 -and $statusCode -lt 500) {
+                    Write-Log "OK" "Gateway route to auth-service is ready (status=$statusCode)"
+                    return
+                }
+            }
+
+            if ($null -eq $statusCode) {
+                Write-Log "WAIT" "Gateway route to auth-service not ready, retry $i/$retry"
+            } else {
+                Write-Log "WAIT" "Gateway route to auth-service returned status=$statusCode, retry $i/$retry"
+            }
+        }
+
+        Start-Sleep -Seconds $sleepSeconds
+    }
+
+    Write-Log "FAIL" "Gateway route to auth-service readiness timeout"
+    exit 1
+}
+
 function Print-Urls() {
     Write-Section "Startup Summary / Access URLs"
     Write-Log "INFO" "Local access URLs (copy and open in browser):"
@@ -259,6 +294,7 @@ try {
     Start-ServiceModule "auth-service" 9010
     Wait-Health "http://localhost:9000/actuator/health" "gateway-zuul" 90
     Wait-Health "http://localhost:9010/actuator/health" "auth-service" 90
+    Wait-GatewayAuthRouteReady
 
     Write-Log "STEP" "3/4 Start business services"
     Start-ServiceModule "user-service" 9011

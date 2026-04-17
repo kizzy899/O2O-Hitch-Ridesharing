@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -46,7 +47,16 @@ public class UserService {
     }
 
     public Map<String, Object> registerOrUpdate(String userId, String role, String nickname, String mobile, String password) {
-        return profile(saveUser(userId, role, nickname, mobile, password).get("userId").toString());
+        return profile(saveUser(userId, normalizeRole(role), nickname, mobile, password).get("userId").toString());
+    }
+
+    public Map<String, Object> register(String userId, String role, String nickname, String mobile, String password) {
+        String normalizedRole = normalizeRole(role);
+        validateRegisterRole(normalizedRole);
+        if (userStore.containsKey(userId)) {
+            throw new BusinessException(4091, "USER_ALREADY_EXISTS");
+        }
+        return profile(saveUser(userId, normalizedRole, nickname, mobile, password).get("userId").toString());
     }
 
     private Map<String, Object> saveUser(String userId, String role, String nickname, String mobile, String password) {
@@ -58,5 +68,18 @@ public class UserService {
         profile.put("password", password);
         userStore.put(userId, profile);
         return profile;
+    }
+
+    private void validateRegisterRole(String role) {
+        if (!"PASSENGER".equals(role) && !"DRIVER".equals(role)) {
+            throw new BusinessException(4036, "ROLE_NOT_ALLOWED_FOR_REGISTER");
+        }
+    }
+
+    private String normalizeRole(String role) {
+        if (role == null) {
+            return "";
+        }
+        return role.trim().toUpperCase(Locale.ROOT);
     }
 }

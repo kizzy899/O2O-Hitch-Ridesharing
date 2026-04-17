@@ -1,6 +1,7 @@
 package com.o2o.hitch.auth.controller;
 
 import com.o2o.hitch.auth.dto.AuthRequest;
+import com.o2o.hitch.auth.dto.RegisterRequest;
 import com.o2o.hitch.auth.service.AuthService;
 import com.o2o.hitch.common.api.ApiResponse;
 import org.springframework.validation.annotation.Validated;
@@ -23,6 +24,17 @@ public class AuthController {
     @PostMapping("/login")
     public ApiResponse<Map<String, Object>> login(@Validated @RequestBody AuthRequest body) {
         return ApiResponse.success(authService.login(body.getUsername(), body.getPassword()));
+    }
+
+    @PostMapping("/register")
+    public ApiResponse<Map<String, Object>> register(@Validated @RequestBody RegisterRequest body) {
+        return ApiResponse.success(authService.register(
+                body.getUsername(),
+                body.getPassword(),
+                body.getRole(),
+                body.getNickname(),
+                body.getMobile()
+        ));
     }
 
     @GetMapping("/me")

@@ -38,4 +38,9 @@ public class UserController {
     public ApiResponse<Map<String, Object>> authProfile(@PathVariable String userId) {
         return ApiResponse.success(userService.authProfile(userId));
     }
+
+    @PostMapping("/internal/register")
+    public ApiResponse<Map<String, Object>> registerInternal(@Validated @RequestBody UserRequest body) {
+        return ApiResponse.success(userService.register(body.getUserId(), body.getRole(), body.getNickname(), body.getMobile(), body.getPassword()));
+    }
 }

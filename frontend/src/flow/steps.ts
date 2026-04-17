@@ -3,6 +3,17 @@ import type { FlowTokens, StepDefinition, StepState } from "../types";
 export const STEP_DEFINITIONS: StepDefinition[] = [
   {
     id: 1,
+    title: "注册（乘客）",
+    roleView: "passenger",
+    objective: "注册乘客账号并获取 passenger token。",
+    rationale: "为教学演示补齐从注册到登录的完整链路。",
+    requestExample: "POST /auth/register { username, password, role: PASSENGER, nickname, mobile }",
+    successCriteria: "返回 token/userId/role，且 role 为 PASSENGER。",
+    commonError: "用户名重复或角色字段非法。",
+    requires: []
+  },
+  {
+    id: 2,
     title: "登录（乘客）",
     roleView: "passenger",
     objective: "用乘客账号登录获取 passenger token。",
@@ -13,7 +24,7 @@ export const STEP_DEFINITIONS: StepDefinition[] = [
     requires: []
   },
   {
-    id: 2,
+    id: 3,
     title: "发起行程",
     roleView: "passenger",
     objective: "创建一条乘客行程并记录 tripId。",
@@ -24,7 +35,7 @@ export const STEP_DEFINITIONS: StepDefinition[] = [
     requires: ["passengerToken"]
   },
   {
-    id: 3,
+    id: 4,
     title: "查询我的行程",
     roleView: "passenger",
     objective: "按乘客维度查询行程列表。",
@@ -35,7 +46,7 @@ export const STEP_DEFINITIONS: StepDefinition[] = [
     requires: ["passengerToken", "tripId"]
   },
   {
-    id: 4,
+    id: 5,
     title: "创建订单",
     roleView: "passenger",
     objective: "基于 tripId 创建订单并记录 orderId。",
@@ -46,7 +57,18 @@ export const STEP_DEFINITIONS: StepDefinition[] = [
     requires: ["passengerToken", "tripId"]
   },
   {
-    id: 5,
+    id: 6,
+    title: "注册（司机）",
+    roleView: "driver",
+    objective: "注册司机账号并获取 driver token。",
+    rationale: "让司机侧演示也包含完整注册入口。",
+    requestExample: "POST /auth/register { username, password, role: DRIVER, nickname, mobile }",
+    successCriteria: "返回 token/userId/role，且 role 为 DRIVER。",
+    commonError: "手机号或用户名重复导致注册失败。",
+    requires: []
+  },
+  {
+    id: 7,
     title: "登录（司机）",
     roleView: "driver",
     objective: "用司机账号登录获取 driver token。",
@@ -57,7 +79,7 @@ export const STEP_DEFINITIONS: StepDefinition[] = [
     requires: []
   },
   {
-    id: 6,
+    id: 8,
     title: "司机接单",
     roleView: "driver",
     objective: "司机接受目标订单。",
@@ -68,10 +90,10 @@ export const STEP_DEFINITIONS: StepDefinition[] = [
     requires: ["driverToken", "orderId"]
   },
   {
-    id: 7,
+    id: 9,
     title: "完成或取消订单",
     roleView: "mixed",
-    objective: "执行完成（7A）或取消（7B）分支。",
+    objective: "执行完成（9A）或取消（9B）分支。",
     rationale: "验证订单状态分支与行程联动完整性。",
     requestExample: "POST /orders/{orderId}/complete 或 /cancel",
     successCriteria: "完成分支返回 COMPLETED；取消分支返回 CANCELLED。",
@@ -79,7 +101,7 @@ export const STEP_DEFINITIONS: StepDefinition[] = [
     requires: ["orderId"]
   },
   {
-    id: 8,
+    id: 10,
     title: "查询订单详情",
     roleView: "passenger",
     objective: "查询单个订单详情。",
@@ -90,7 +112,7 @@ export const STEP_DEFINITIONS: StepDefinition[] = [
     requires: ["passengerToken", "orderId"]
   },
   {
-    id: 9,
+    id: 11,
     title: "查询我的订单列表",
     roleView: "passenger",
     objective: "按 userId 查询订单列表。",
@@ -101,7 +123,7 @@ export const STEP_DEFINITIONS: StepDefinition[] = [
     requires: ["passengerToken"]
   },
   {
-    id: 10,
+    id: 12,
     title: "越权拦截：订单列表",
     roleView: "passenger",
     objective: "乘客尝试查询他人订单列表。",
@@ -113,7 +135,7 @@ export const STEP_DEFINITIONS: StepDefinition[] = [
     securityStep: true
   },
   {
-    id: 11,
+    id: 13,
     title: "越权拦截：非归属司机接单",
     roleView: "driver",
     objective: "使用 other-driver-token 尝试接单。",
@@ -125,7 +147,7 @@ export const STEP_DEFINITIONS: StepDefinition[] = [
     securityStep: true
   },
   {
-    id: 12,
+    id: 14,
     title: "越权拦截：行程详情",
     roleView: "passenger",
     objective: "查询他人 tripId 的详情。",
@@ -137,7 +159,7 @@ export const STEP_DEFINITIONS: StepDefinition[] = [
     securityStep: true
   },
   {
-    id: 13,
+    id: 15,
     title: "越权拦截：司机绑定",
     roleView: "driver",
     objective: "司机使用非本人 driverId 尝试绑定行程。",
@@ -181,5 +203,5 @@ export function getStepStatusLabel(status: StepState): string {
 }
 
 export function isSecurityStep(stepId: number): boolean {
-  return stepId >= 10;
+  return stepId >= 12;
 }
