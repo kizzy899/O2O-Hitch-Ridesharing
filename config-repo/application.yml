@@ -1,0 +1,15 @@
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+security:
+  jwt:
+    secret: O2O_DEMO_SECRET
+    expire-seconds: 7200

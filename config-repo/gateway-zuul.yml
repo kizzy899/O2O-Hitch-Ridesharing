@@ -1,0 +1,35 @@
+server:
+  port: 9000
+spring:
+  application:
+    name: gateway-zuul
+zuul:
+  prefix: /api
+  routes:
+    auth-service:
+      path: /auth/**
+      service-id: auth-service
+      strip-prefix: false
+    user-service:
+      path: /users/**
+      service-id: user-service
+      strip-prefix: false
+    driver-service:
+      path: /drivers/**
+      service-id: driver-service
+      strip-prefix: false
+    passenger-service:
+      path: /passengers/**
+      service-id: passenger-service
+      strip-prefix: false
+    trip-service:
+      path: /trips/**
+      service-id: trip-service
+      strip-prefix: false
+    order-service:
+      path: /orders/**
+      service-id: order-service
+      strip-prefix: false
+ribbon:
+  ReadTimeout: 2000
+  ConnectTimeout: 1000

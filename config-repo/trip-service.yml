@@ -1,0 +1,8 @@
+server:
+  port: 9014
+spring:
+  application:
+    name: trip-service
+feign:
+  hystrix:
+    enabled: true

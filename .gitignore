@@ -35,3 +35,10 @@ coverage/
 *.pid
 openrestrylog/
 *.swp
+.worktrees/
+/skills/
+/tmp/
+/.edge-profile/
+/.edge-shot-profile/
+/.m2/
+/.mvn-local-settings.xml

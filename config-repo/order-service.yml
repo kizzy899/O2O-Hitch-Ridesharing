@@ -1,0 +1,11 @@
+server:
+  port: 9015
+spring:
+  application:
+    name: order-service
+feign:
+  hystrix:
+    enabled: true
+ribbon:
+  eureka:
+    enabled: true
