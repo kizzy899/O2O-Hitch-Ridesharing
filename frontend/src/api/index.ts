@@ -103,6 +103,12 @@ function buildApi(client: ApiClient) {
     login: (username: string, password: string) => client.post<AuthSession | AuthSession[]>("/auth/login", { username, password }),
     register: (username: string, password: string, role: string, nickname: string, mobile: string) =>
       client.post<AuthSession | AuthSession[]>("/auth/register", { username, password, role, nickname, mobile }),
+    upsertPassengerProfile: (passengerId: string, level = "STANDARD", emergencyContact = "13800009999") =>
+      client.post<{ passengerId: string; level: string; emergencyContact: string }>("/passengers", {
+        passengerId,
+        level,
+        emergencyContact
+      }),
     createTrip: (payload: { passengerId: string; from: string; to: string }) => client.post<TripRecord>("/trips", payload),
     listTrips: (passengerId: string) => client.get<TripRecord[]>(`/trips?passengerId=${encodeURIComponent(passengerId)}`),
     createOrder: (payload: { tripId: string; driverId: string; passengerId: string }) => client.post<OrderRecord>("/orders/create", payload),

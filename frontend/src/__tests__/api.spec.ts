@@ -58,4 +58,35 @@ describe("ApiClient", () => {
       })
     );
   });
+
+  it("calls passenger profile upsert endpoint with expected payload", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        code: 0,
+        message: "ok",
+        data: { passengerId: "passenger003", level: "STANDARD", emergencyContact: "13800009999" },
+        timestamp: Date.now(),
+        traceId: "t-3"
+      })
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const api = createApi(() => "p-token");
+    await api.upsertPassengerProfile("passenger003", "STANDARD", "13800009999");
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "http://localhost:9000/api/passengers",
+      expect.objectContaining({
+        method: "POST",
+        headers: expect.objectContaining({ Authorization: "Bearer p-token" }),
+        body: JSON.stringify({
+          passengerId: "passenger003",
+          level: "STANDARD",
+          emergencyContact: "13800009999"
+        })
+      })
+    );
+  });
 });

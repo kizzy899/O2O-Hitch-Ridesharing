@@ -1,4 +1,4 @@
-import { useMemo, useRef } from "react";
+﻿import { useMemo, useRef } from "react";
 import { ApiError } from "../api";
 import { GuideBox } from "../components/GuideBox";
 import { ResponsePanel } from "../components/ResponsePanel";
@@ -37,9 +37,10 @@ export function FlowConsolePanel() {
   const activeStep = STEP_DEFINITIONS.find((step) => step.id === state.flow.activeStepId) ?? STEP_DEFINITIONS[0];
   const blockedReason = isStepBlocked(activeStep, toFlowTokens(state));
 
-  const roleFilteredSteps = state.flow.roleView === "mixed"
-    ? STEP_DEFINITIONS
-    : STEP_DEFINITIONS.filter((step) => step.roleView === state.flow.roleView || step.roleView === "mixed");
+  const roleFilteredSteps =
+    state.flow.roleView === "mixed"
+      ? STEP_DEFINITIONS
+      : STEP_DEFINITIONS.filter((step) => step.roleView === state.flow.roleView || step.roleView === "mixed");
 
   function buildDynamicUsername(prefix: "passenger" | "driver") {
     const suffix = `${Date.now()}${Math.floor(Math.random() * 1000)}`.slice(-8);
@@ -94,10 +95,13 @@ export function FlowConsolePanel() {
     if (stepId === 2) {
       const session = normalizeAuth(await publicApi.login(getPassengerUserId(), DEFAULT_PASSWORD));
       loginSuccess("passenger", session.token, { userId: session.userId, role: session.role });
-      return makeFlowStepResult(true, "乘客登录成功，已同步 passenger token", session);
+      const passengerScopedApi = makeApi(() => session.token);
+      await passengerScopedApi.upsertPassengerProfile(session.userId);
+      return makeFlowStepResult(true, "乘客登录成功，已同步 passenger token 并补齐乘客档案", session);
     }
 
     if (stepId === 3) {
+      await passengerApi.upsertPassengerProfile(getPassengerUserId());
       const trip = await passengerApi.createTrip({ passengerId: getPassengerUserId(), from: "Campus A", to: "Campus B" });
       const tripId = trip.tripId || trip.id || "";
       setTripId(tripId);

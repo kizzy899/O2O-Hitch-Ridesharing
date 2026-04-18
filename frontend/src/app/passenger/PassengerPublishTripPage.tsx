@@ -25,8 +25,10 @@ export function PassengerPublishTripPage() {
     setMessage("");
 
     try {
+      const passengerId = state.users.passenger?.userId ?? "passenger001";
+      await api.upsertPassengerProfile(passengerId);
       const trip = await api.createTrip({
-        passengerId: state.users.passenger?.userId ?? "passenger001",
+        passengerId,
         from,
         to
       });
