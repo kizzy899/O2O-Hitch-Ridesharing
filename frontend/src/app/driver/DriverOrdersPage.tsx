@@ -114,11 +114,17 @@ export function DriverOrdersPage() {
 
   return (
     <section className="role-page">
-      <div className="page-head">
-        <h2>我的订单</h2>
-        <div className="page-actions">
-          <PageBackButton fallback="/driver/home" />
-          <button type="button" onClick={loadOrders} disabled={loading}>{loading ? "加载中..." : "刷新列表"}</button>
+      <div className="page-hero">
+        <div className="page-title-block">
+          <span className="page-overline">Driver Orders</span>
+          <div className="page-head">
+            <h2>我的订单</h2>
+            <div className="page-actions">
+              <PageBackButton fallback="/driver/home" />
+              <button type="button" onClick={loadOrders} disabled={loading}>{loading ? "加载中..." : "刷新列表"}</button>
+            </div>
+          </div>
+          <p className="page-sub">集中处理当前司机相关订单，查看乘客与履约信息，并继续完成后续状态流转。</p>
         </div>
       </div>
 
@@ -191,16 +197,16 @@ export function DriverOrdersPage() {
                 </div>
                 <div className="order-details">
                   <span className="order-detail-item">
-                    <span className="detail-icon">👤</span>
+                    <span className="meta-dot" aria-hidden="true" />
                     <span>乘客: {item.passengerId}</span>
                   </span>
                   <span className="order-detail-item">
-                    <span className="detail-icon">📋</span>
+                    <span className="meta-dot" aria-hidden="true" />
                     <span>行程: {item.tripId}</span>
                   </span>
                   {item.tripStatus && (
                     <span className="order-detail-item">
-                      <span className="detail-icon">📍</span>
+                      <span className="meta-dot" aria-hidden="true" />
                       <span>行程状态: {tripStatusLabel(item.tripStatus)}</span>
                     </span>
                   )}

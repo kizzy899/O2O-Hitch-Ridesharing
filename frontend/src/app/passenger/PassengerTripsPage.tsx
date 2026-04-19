@@ -89,11 +89,17 @@ export function PassengerTripsPage() {
 
   return (
     <section className="role-page">
-      <div className="page-head">
-        <h2>我的行程</h2>
-        <div className="page-actions">
-          <PageBackButton fallback="/passenger/home" />
-          <button type="button" onClick={loadTrips} disabled={loading}>{loading ? "加载中..." : "刷新列表"}</button>
+      <div className="page-hero">
+        <div className="page-title-block">
+          <span className="page-overline">Passenger Trips</span>
+          <div className="page-head">
+            <h2>我的行程</h2>
+            <div className="page-actions">
+              <PageBackButton fallback="/passenger/home" />
+              <button type="button" onClick={loadTrips} disabled={loading}>{loading ? "加载中..." : "刷新列表"}</button>
+            </div>
+          </div>
+          <p className="page-sub">查看当前发布的出行需求、匹配状态和司机信息，符合条件时可直接进入下单流程。</p>
         </div>
       </div>
 

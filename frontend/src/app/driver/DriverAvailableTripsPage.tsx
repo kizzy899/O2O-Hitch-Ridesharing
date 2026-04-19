@@ -132,13 +132,21 @@ export function DriverAvailableTripsPage() {
 
   return (
     <section className="role-page">
-      <div className="page-head">
-        <h2>可接行程</h2>
-        <div className="page-actions">
-          <PageBackButton fallback="/driver/home" />
-          <button type="button" onClick={handleRefresh} disabled={loading}>
-            {loading ? "加载中..." : "刷新列表"}
-          </button>
+      <div className="page-hero">
+        <div className="page-title-block">
+          <span className="page-overline">Dispatch Board</span>
+          <div className="page-head">
+            <h2>可接任务</h2>
+            <div className="page-actions">
+              <PageBackButton fallback="/driver/home" />
+              <button type="button" onClick={handleRefresh} disabled={loading}>
+                {loading ? "加载中..." : "刷新列表"}
+              </button>
+            </div>
+          </div>
+          <p className="page-sub">
+            在待接订单和发布中行程之间切换，优先处理更适合当前服务路线的任务。
+          </p>
         </div>
       </div>
 
@@ -184,11 +192,11 @@ export function DriverAvailableTripsPage() {
                     </div>
                     <div className="order-details">
                       <span className="order-detail-item">
-                        <span className="detail-icon">📋</span>
+                        <span className="meta-dot" aria-hidden="true" />
                         <span>行程: {item.tripId}</span>
                       </span>
                       <span className="order-detail-item">
-                        <span className="detail-icon">👤</span>
+                        <span className="meta-dot" aria-hidden="true" />
                         <span>乘客: {item.passengerId}</span>
                       </span>
                     </div>
@@ -234,7 +242,7 @@ export function DriverAvailableTripsPage() {
                       </span>
                     </div>
                     <p className="trip-passenger">
-                      <span className="detail-icon">👤</span>
+                      <span className="meta-dot" aria-hidden="true" />
                       乘客: {item.passengerNickname || item.passengerId}
                     </p>
                   </div>

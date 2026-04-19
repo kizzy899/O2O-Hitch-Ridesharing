@@ -1,6 +1,5 @@
 import { useEffect, useRef } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { FlowConsolePanel } from "../console/FlowConsolePanel";
 import { getRouteSyncAction } from "../flow/route-sync";
 import { useAppSession } from "../state/app-session";
 
@@ -20,7 +19,15 @@ export function SplitWorkbenchLayout() {
         ? state.users.driver
         : undefined;
 
-  function handleLogout() {
+  const roleLabel =
+    state.activeRole === "passenger" ? "乘客" : state.activeRole === "driver" ? "司机" : "未登录";
+
+  function handleSessionAction() {
+    if (state.activeRole === "guest") {
+      navigate("/auth");
+      return;
+    }
+
     logoutActiveRole();
     setActiveRole("guest");
     navigate("/auth");
@@ -52,38 +59,45 @@ export function SplitWorkbenchLayout() {
   return (
     <div className={`workbench-root ${DEMO_MODE ? "demo-mode" : "app-mode"}`}>
       <header className="workbench-header">
-        <div>
-          <h1>Hitch Ride Platform</h1>
-          <p>{DEMO_MODE ? "教学控制台 + 真实业务界面" : "真实业务 Web 端"}</p>
+        <div className="brand-block">
+          <div className="brand-mark" aria-hidden="true">
+            <span />
+          </div>
+          <div className="brand-copy">
+            <span className="brand-kicker">同路出行服务</span>
+            <h1>顺路出行</h1>
+            <p>发布行程、匹配车主、在线履约，全流程清晰可追踪。</p>
+          </div>
         </div>
 
         <nav className="header-nav">
-          <NavLink to="/auth">认证入口</NavLink>
-          <NavLink to="/passenger/home">乘客端</NavLink>
-          <NavLink to="/driver/home">司机端</NavLink>
+          <NavLink to="/auth">首页</NavLink>
+          <NavLink to="/passenger/home">乘客中心</NavLink>
+          <NavLink to="/driver/home">司机中心</NavLink>
         </nav>
 
         <div className="header-meta">
-          <span className="identity-tag">身份: {state.activeRole === "guest" ? "未登录" : state.activeRole}</span>
-          <span className="identity-user">用户: {currentUser?.userId ?? "-"}</span>
-          <button type="button" onClick={handleLogout} disabled={state.activeRole === "guest"}>退出登录</button>
+          <div className="identity-chip">
+            <span className="identity-label">当前身份</span>
+            <strong>{roleLabel}</strong>
+          </div>
+          <div className="identity-chip">
+            <span className="identity-label">账号</span>
+            <strong>{currentUser?.userId ?? "未登录"}</strong>
+          </div>
+          <button
+            type="button"
+            className={state.activeRole === "guest" ? "primary header-action" : "header-action"}
+            onClick={handleSessionAction}
+          >
+            {state.activeRole === "guest" ? "立即登录" : "退出"}
+          </button>
         </div>
       </header>
 
-      {DEMO_MODE ? (
-        <div className="split-body">
-          <aside className="split-left">
-            <FlowConsolePanel />
-          </aside>
-          <main className="split-right">
-            <Outlet />
-          </main>
-        </div>
-      ) : (
-        <main className="single-body">
-          <Outlet />
-        </main>
-      )}
+      <main className="single-body">
+        <Outlet />
+      </main>
     </div>
   );
 }

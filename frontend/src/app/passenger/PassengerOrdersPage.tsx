@@ -97,11 +97,17 @@ export function PassengerOrdersPage() {
 
   return (
     <section className="role-page">
-      <div className="page-head">
-        <h2>我的订单</h2>
-        <div className="page-actions">
-          <PageBackButton fallback="/passenger/home" />
-          <button type="button" onClick={loadOrders} disabled={loading}>{loading ? "加载中..." : "刷新列表"}</button>
+      <div className="page-hero">
+        <div className="page-title-block">
+          <span className="page-overline">Passenger Orders</span>
+          <div className="page-head">
+            <h2>我的订单</h2>
+            <div className="page-actions">
+              <PageBackButton fallback="/passenger/home" />
+              <button type="button" onClick={loadOrders} disabled={loading}>{loading ? "加载中..." : "刷新列表"}</button>
+            </div>
+          </div>
+          <p className="page-sub">统一查看订单状态、司机信息与履约节点，支持在处理中订单里直接查看详情或取消。</p>
         </div>
       </div>
 
@@ -165,16 +171,16 @@ export function PassengerOrdersPage() {
                 </div>
                 <div className="order-details">
                   <span className="order-detail-item">
-                    <span className="detail-icon">🚗</span>
+                    <span className="meta-dot" aria-hidden="true" />
                     <span>司机: {item.driverId}</span>
                   </span>
                   <span className="order-detail-item">
-                    <span className="detail-icon">📋</span>
+                    <span className="meta-dot" aria-hidden="true" />
                     <span>行程: {item.tripId}</span>
                   </span>
                   {item.tripStatus && (
                     <span className="order-detail-item">
-                      <span className="detail-icon">📍</span>
+                      <span className="meta-dot" aria-hidden="true" />
                       <span>行程状态: {tripStatusLabel(item.tripStatus)}</span>
                     </span>
                   )}

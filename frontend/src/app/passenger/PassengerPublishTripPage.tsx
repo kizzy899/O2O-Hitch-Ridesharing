@@ -79,16 +79,22 @@ export function PassengerPublishTripPage() {
 
   return (
     <section className="role-page">
-      <div className="page-head">
-        <h2>发布行程</h2>
-        <PageBackButton fallback="/passenger/home" />
+      <div className="page-hero">
+        <div className="page-title-block">
+          <span className="page-overline">Trip Creation</span>
+          <div className="page-head">
+            <h2>发布行程</h2>
+            <PageBackButton fallback="/passenger/home" />
+          </div>
+          <p className="page-sub">填写起点和终点后立即创建出行需求，系统会进入匹配与订单流转。</p>
+        </div>
       </div>
 
       <div className="publish-trip-container">
         <form className="trip-form" onSubmit={onSubmit}>
           <div className="form-section">
             <label className="form-label">
-              <span className="label-icon">📍</span>
+              <span className="field-accent" aria-hidden="true" />
               起点
             </label>
             <input
@@ -118,7 +124,7 @@ export function PassengerPublishTripPage() {
 
           <div className="form-section">
             <label className="form-label">
-              <span className="label-icon">🎯</span>
+              <span className="field-accent secondary" aria-hidden="true" />
               终点
             </label>
             <input
