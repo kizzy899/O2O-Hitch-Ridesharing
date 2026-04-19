@@ -30,6 +30,41 @@ export class ApiError extends Error {
   }
 }
 
+function parseEnvelope<T>(raw: unknown): ApiEnvelope<T> {
+  if (!raw || typeof raw !== "object") {
+    throw new ApiError("响应格式错误", 500, undefined, raw);
+  }
+
+  const envelope = raw as Partial<ApiEnvelope<T>>;
+  return {
+    code: typeof envelope.code === "number" ? envelope.code : -1,
+    message: typeof envelope.message === "string" ? envelope.message : "请求失败",
+    data: envelope.data as T,
+    timestamp: envelope.timestamp,
+    traceId: envelope.traceId
+  };
+}
+
+async function parseResponseBody(response: Response): Promise<unknown> {
+  const contentType = response.headers.get("content-type") || "";
+
+  if (contentType.includes("application/json")) {
+    return response.json();
+  }
+
+  const text = await response.text();
+  if (!text.trim()) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    return { code: response.ok ? 0 : response.status, message: text, data: null };
+  }
+}
+
+
 export class ApiClient {
   private readonly baseUrl: string;
   private readonly tokenProvider: () => string;
@@ -63,13 +98,27 @@ export class ApiClient {
 
     this.hooks?.onRequest?.({ method, path, requestBody: body });
 
-    const response = await fetch(`${this.baseUrl}${path}`, {
-      method,
-      headers,
-      body: body === undefined ? undefined : JSON.stringify(body)
-    });
+    let response: Response;
+    try {
+      response = await fetch(`${this.baseUrl}${path}`, {
+        method,
+        headers,
+        body: body === undefined ? undefined : JSON.stringify(body)
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "网络异常，请检查服务是否启动";
+      this.hooks?.onError?.({ method, path, requestBody: body, errorMessage: message });
+      throw new ApiError(message, 0);
+    }
 
-    const envelope = (await response.json()) as ApiEnvelope<T>;
+    let rawBody: unknown;
+    try {
+      rawBody = await parseResponseBody(response);
+    } catch {
+      rawBody = { code: response.status, message: "响应解析失败", data: null };
+    }
+
+    const envelope = parseEnvelope<T>(rawBody);
 
     if (!response.ok || envelope.code !== 0) {
       this.hooks?.onError?.({
@@ -110,7 +159,14 @@ function buildApi(client: ApiClient) {
         emergencyContact
       }),
     createTrip: (payload: { passengerId: string; from: string; to: string }) => client.post<TripRecord>("/trips", payload),
-    listTrips: (passengerId: string) => client.get<TripRecord[]>(`/trips?passengerId=${encodeURIComponent(passengerId)}`),
+    listTrips: (passengerId?: string, status?: string) => {
+      const params = new URLSearchParams();
+      if (passengerId) params.append("passengerId", passengerId);
+      if (status) params.append("status", status);
+      const query = params.toString();
+      return client.get<TripRecord[]>(query ? `/trips?${query}` : "/trips");
+    },
+    listAllPublishedTrips: () => client.get<TripRecord[]>("/trips?status=PUBLISHED"),
     createOrder: (payload: { tripId: string; driverId: string; passengerId: string }) => client.post<OrderRecord>("/orders/create", payload),
     acceptOrder: (orderId: string) => client.post<OrderRecord>(`/orders/${orderId}/accept`),
     completeOrder: (orderId: string) => client.post<OrderRecord>(`/orders/${orderId}/complete`),
@@ -124,7 +180,11 @@ function buildApi(client: ApiClient) {
     },
     getTrip: (tripId: string) => client.get<TripRecord>(`/trips/${tripId}`),
     matchDriver: (tripId: string, driverId: string) =>
-      client.post<TripRecord>(`/trips/${tripId}/match-driver?driverId=${encodeURIComponent(driverId)}`)
+      client.post<TripRecord>(`/trips/${tripId}/match-driver?driverId=${encodeURIComponent(driverId)}`),
+    getDriverAvailability: (driverId: string) =>
+      client.get<{ driverId: string; available: boolean; servedBy?: string }>(`/drivers/${driverId}/availability`),
+    setDriverAvailability: (driverId: string, available: boolean) =>
+      client.put<{ driverId: string; available: boolean }>(`/drivers/${driverId}/availability`, { available })
   };
 }
 

@@ -61,9 +61,16 @@ export interface TripRecord {
   tripId?: string;
   id?: string;
   passengerId: string;
+  passengerNickname?: string;
+  from?: string;
+  to?: string;
   status?: string;
   driverId?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
+
+export type TripStatus = "PUBLISHED" | "MATCHED" | "ORDER_ACCEPTED" | "ORDER_COMPLETED" | "ORDER_CANCELLED";
 
 export interface OrderRecord {
   orderId?: string;
@@ -74,7 +81,12 @@ export interface OrderRecord {
   status?: string;
   tripStatus?: string;
   driverAvailable?: boolean;
+  driverNode?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
+
+export type OrderStatus = "PENDING_ACCEPT" | "ACCEPTED" | "COMPLETED" | "CANCELLED";
 
 export interface FlowStepResult {
   passed: boolean;

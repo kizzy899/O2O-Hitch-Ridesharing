@@ -1,4 +1,4 @@
-﻿import { createContext, useContext, useMemo, useReducer } from "react";
+﻿import { createContext, useContext, useEffect, useMemo, useReducer } from "react";
 import type { ReactNode } from "react";
 import type { ApiTrace, ApiTraceSource, AppRole, AppSessionState, AppUser, FlowStepResult, StepState } from "../types";
 import { STEP_DEFINITIONS } from "../flow/steps";
@@ -10,27 +10,61 @@ function buildInitialStepStates(): Record<number, StepState> {
   }, {});
 }
 
-const initialState: AppSessionState = {
-  tokens: {
-    passengerToken: "",
-    driverToken: ""
-  },
-  users: {},
-  activeRole: "guest",
-  flow: {
-    roleView: "mixed",
-    activeStepId: 1,
-    completionAction: "complete",
-    tripId: "",
-    orderId: "",
-    foreignTripId: "",
-    stepStates: buildInitialStepStates(),
-    stepMessages: {},
-    lastResponse: null,
-    lastError: ""
-  },
-  apiTrace: null
-};
+const STORAGE_KEY = "o2o-hitch-app-session";
+
+function getStoredState(): Pick<AppSessionState, "tokens" | "users" | "activeRole"> | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (!raw) {
+      return null;
+    }
+    const parsed = JSON.parse(raw) as Partial<AppSessionState>;
+    if (!parsed.tokens || !parsed.activeRole) {
+      return null;
+    }
+    return {
+      tokens: {
+        passengerToken: parsed.tokens.passengerToken || "",
+        driverToken: parsed.tokens.driverToken || ""
+      },
+      users: parsed.users || {},
+      activeRole: parsed.activeRole
+    };
+  } catch {
+    return null;
+  }
+}
+
+function buildInitialState(): AppSessionState {
+  const stored = getStoredState();
+  return {
+    tokens: stored?.tokens || {
+      passengerToken: "",
+      driverToken: ""
+    },
+    users: stored?.users || {},
+    activeRole: stored?.activeRole || "guest",
+    flow: {
+      roleView: "mixed",
+      activeStepId: 1,
+      completionAction: "complete",
+      tripId: "",
+      orderId: "",
+      foreignTripId: "",
+      stepStates: buildInitialStepStates(),
+      stepMessages: {},
+      lastResponse: null,
+      lastError: ""
+    },
+    apiTrace: null
+  };
+}
+
+const initialState: AppSessionState = buildInitialState();
 
 type AppSessionAction =
   | { type: "SET_ACTIVE_ROLE"; role: AppRole }
@@ -162,6 +196,25 @@ const AppSessionContext = createContext<AppSessionContextValue | undefined>(unde
 
 export function AppSessionProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(reducer, initialState);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    try {
+      window.localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          tokens: state.tokens,
+          users: state.users,
+          activeRole: state.activeRole
+        })
+      );
+    } catch {
+      // ignore storage write errors
+    }
+  }, [state.activeRole, state.tokens, state.users]);
 
   const value = useMemo<AppSessionContextValue>(
     () => ({

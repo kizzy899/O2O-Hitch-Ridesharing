@@ -4,6 +4,8 @@ import { FlowConsolePanel } from "../console/FlowConsolePanel";
 import { getRouteSyncAction } from "../flow/route-sync";
 import { useAppSession } from "../state/app-session";
 
+const DEMO_MODE = (import.meta.env.VITE_DEMO_MODE ?? "false") === "true";
+
 export function SplitWorkbenchLayout() {
   const { state, logoutActiveRole, setActiveRole, setActiveStep } = useAppSession();
   const navigate = useNavigate();
@@ -25,6 +27,10 @@ export function SplitWorkbenchLayout() {
   }
 
   useEffect(() => {
+    if (!DEMO_MODE) {
+      return;
+    }
+
     const action = getRouteSyncAction({
       pathname: location.pathname,
       activeStepId: state.flow.activeStepId,
@@ -44,11 +50,11 @@ export function SplitWorkbenchLayout() {
   }, [location.pathname, navigate, setActiveStep, state.flow.activeStepId]);
 
   return (
-    <div className="workbench-root">
+    <div className={`workbench-root ${DEMO_MODE ? "demo-mode" : "app-mode"}`}>
       <header className="workbench-header">
         <div>
           <h1>Hitch Ride Platform</h1>
-          <p>教学控制台 + 真实业务界面</p>
+          <p>{DEMO_MODE ? "教学控制台 + 真实业务界面" : "真实业务 Web 端"}</p>
         </div>
 
         <nav className="header-nav">
@@ -64,14 +70,20 @@ export function SplitWorkbenchLayout() {
         </div>
       </header>
 
-      <div className="split-body">
-        <aside className="split-left">
-          <FlowConsolePanel />
-        </aside>
-        <main className="split-right">
+      {DEMO_MODE ? (
+        <div className="split-body">
+          <aside className="split-left">
+            <FlowConsolePanel />
+          </aside>
+          <main className="split-right">
+            <Outlet />
+          </main>
+        </div>
+      ) : (
+        <main className="single-body">
           <Outlet />
         </main>
-      </div>
+      )}
     </div>
   );
 }
